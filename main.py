@@ -18,6 +18,7 @@ async def on_shutdown(_):
 commands.register_commands_handlers(dp)
 quiz.register_quiz_handlers(dp)
 
+
 echo.register_echo_handler(dp)
 
 
