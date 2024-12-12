@@ -1,35 +1,29 @@
 #main.py
-import logging
 
 from aiogram import types, executor
-from config import bot, dp
+from config import bot, dp, Admins
 import logging
-import os
+from handlers import commands, echo, quiz
+
+async def on_startup(_):
+    for admin in Admins:
+        await bot.send_message(chat_id=admin, text='БОТ включен !')
 
 
-@dp.message_handler(commands=["start", "help"])
-async def start_handler(message: types.Message):
-    await bot.send_message(chat_id=message.from_user.id,
-                           text=f'hello {message.from_user.first_name}!\n'
-                                f'Твой Telegram ID - {message.from_user.id}')
+async def on_shutdown(_):
+    for admin in Admins:
+        await bot.send_message(chat_id=admin, text='БОТ выключен !')
 
-@dp.message_handler(commands=["mem"])
-async def mem_handler(message: types.Message):
-    photo_path = os.path.join('media', 'img.png')
-    with open(photo_path, 'rb') as photo:
-        await message.answer_photo(photo=photo, caption='мемчик')
 
-#===============================================
+commands.register_commands_handlers(dp)
+quiz.register_quiz_handlers(dp)
 
-@dp.message_handler()
-async def echo_handler(message: types.Message):
-   if message.text.isdigit():  # Проверяем, состоит ли текст только из цифр
-        number = int(message.text)
-        await message.answer(f"Квадрат числа: {number ** 2}")
-   else:
-        await message.answer(message.text)
+echo.register_echo_handler(dp)
+
+
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup ,
+                           on_shutdown=on_shutdown)
